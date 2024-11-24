@@ -27,6 +27,7 @@ def crawling_all():
     crawling_tplus()
     save_all_data()
     preprocessing1()
+
     merge_csv_files()
     
 def crawling_hello_mob():
@@ -127,8 +128,11 @@ def crawling_tplus():
         else:
             telecom = "UNKNOWN"  # 기본값 설정
     
-        # after_data_speed 처리
+        # AfterDataSpeed 처리: "최대" 이후의 속도를 추출
         after_data_speed = "없음"  # 기본값 설정
+        data_speed_match = re.search(r"최대\s*(\d+)(Mbps|Kbps)", data)
+        if data_speed_match:
+            after_data_speed = f"{data_speed_match.group(1)} {data_speed_match.group(2)}"
     
         # DiscountMonth 처리 (숫자 감소)
         discount_month_text = one_data.select("p.plan-af-price.light-gray")[0].text
@@ -153,9 +157,9 @@ def crawling_tplus():
     df = pd.DataFrame(all_data, columns=columns)
     
     # CSV로 저장 (컬럼명을 정확히 지정)
-    df.to_csv("./data/티플러스_data.csv", index=False, encoding="utf-8-sig")  # UTF-8-SIG로 저장하여 한글 깨짐 방지
+    df.to_csv("./data/티플러스_data.csv", index=False, encoding="utf-8-sig")  # UTF-8-SIG로 저장하여 한글 깨짐 방지ef crawling_eyes():
 def crawling_eyes():
-    # 브라우저 설정
+        # 브라우저 설정
     company = '아이즈모바일'
     all_data = []
     browser = webdriver.Chrome()
@@ -320,30 +324,31 @@ def preprocessing1():
     merged_data['Telecom'] = merged_data['Telecom'].replace('LGU+', 'LGU')
     # 'Call' 열의 값이 '-'이면 '0분'으로 변경
     merged_data['Call'] = merged_data['Call'].replace('-', '0분')
-    
+    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace({'1 Mbps': '1Mbps', '3 Mbps': '3Mbps', '5 Mbps': '5Mbps'})
+
     # 'Message' 열의 값이 '-'이면 '0건'으로 변경
     merged_data['Message'] = merged_data['Message'].replace('-', '0건')
     
     # 'AfterDataSpeed' 열의 값이 '3Mbps속도제한'이면 '3 Mbps'으로 변경
-    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('3Mbps속도제한', '3 Mbps')
+    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('3Mbps속도제한', '3Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '1Mbps속도제한'이면 '1 Mbps'으로 변경
-    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('1Mbps속도제한', '1 Mbps')
+    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('1Mbps속도제한', '1Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '5Mbps속도제한'이면 '5 Mbps'으로 변경
-    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('5Mbps속도제한', '5 Mbps')
+    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('5Mbps속도제한', '5Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '400Kbps속도제한'이면 '400Kbps'으로 변경
     merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('400Kbps속도제한', '400Kbps')
     
     # 'AfterDataSpeed' 열의 값이 '3Mbps속도제한'이면 '3 Mbps'으로 변경
-    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('3Mbps속도제한 무제한', '3 Mbps')
+    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('3Mbps속도제한 무제한', '3Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '1Mbps속도제한'이면 '1 Mbps'으로 변경
-    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('1Mbps속도제한 무제한', '1 Mbps')
+    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('1Mbps속도제한 무제한', '1Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '5Mbps속도제한'이면 '5 Mbps'으로 변경
-    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('5Mbps속도제한 무제한', '5 Mbps')
+    merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('5Mbps속도제한 무제한', '5Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '400Kbps속도제한'이면 '400Kbps'으로 변경
     merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace('400Kbps속도제한 무제한', '400Kbps')
@@ -438,129 +443,40 @@ def preprocessing(raw):
     raw['Message'] = raw['Message'].replace('-', '0건')
     
     # 'AfterDataSpeed' 열의 값이 '3Mbps속도제한'이면 '3 Mbps'으로 변경
-    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('3Mbps속도제한', '3 Mbps')
+    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('3Mbps속도제한', '3Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '1Mbps속도제한'이면 '1 Mbps'으로 변경
-    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('1Mbps속도제한', '1 Mbps')
+    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('1Mbps속도제한', '1Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '5Mbps속도제한'이면 '5 Mbps'으로 변경
-    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('5Mbps속도제한', '5 Mbps')
+    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('5Mbps속도제한', '5Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '400Kbps속도제한'이면 '400Kbps'으로 변경
     raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('400Kbps속도제한', '400Kbps')
     
     # 'AfterDataSpeed' 열의 값이 '3Mbps속도제한 무제한'이면 '3 Mbps'으로 변경
-    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('3Mbps속도제한 무제한', '3 Mbps')
+    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('3Mbps속도제한 무제한', '3Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '1Mbps속도제한 무제한'이면 '1 Mbps'으로 변경
-    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('1Mbps속도제한 무제한', '1 Mbps')
+    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('1Mbps속도제한 무제한', '1Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '5Mbps속도제한 무제한'이면 '5 Mbps'으로 변경
-    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('5Mbps속도제한 무제한', '5 Mbps')
+    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('5Mbps속도제한 무제한', '5Mbps')
     
     # 'AfterDataSpeed' 열의 값이 '400Kbps속도제한 무제한'이면 '400Kbps'으로 변경
     raw['AfterDataSpeed'] = raw['AfterDataSpeed'].replace('400Kbps속도제한 무제한', '400Kbps')
 
     return raw
 
-
-
-
-
-
-def set_font():
-    # 운영체제에 따른 한글 폰트 설정
-    if platform.system() == 'Darwin':  # MacOS
-        plt.rcParams['font.family'] = 'AppleGothic'
-    elif platform.system() == 'Windows':  # Windows
-        plt.rcParams['font.family'] = 'Malgun Gothic'
-    else:  # Linux 등
-        plt.rcParams['font.family'] = 'NanumGothic'
-    plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
-
-    # 오늘 날짜 가져오기
-    today_date = pd.Timestamp.now().strftime("%Y-%m-%d")
-
-
-# 데이터 로드 함수
-
-
 def read_data():
     # 데이터 읽기
     raw = pd.read_csv("./data/알뜰폰_data.csv")
-
-    # 'Price' 열의 값에서 쉼표(,) 제거 후 숫자로 변환
-    raw['Price'] = raw['Price'].str.replace(',', '').astype(float)  # 먼저 float로 변환
-    raw = raw.dropna(subset=['Price'])  # 'Price' 열에서 NaN 값이 있는 행 제거
-    raw['Price'] = raw['Price'].astype(int)  # 나머지 값들을 int로 변환
-
-    # 'DiscountMonth' 열에서 '정보 없음'을 '없음'으로 변경
-    raw['DiscountMonth'] = raw['DiscountMonth'].replace('정보 없음', '없음')
-    
-    # 'AfterDataSpeed' 열에서 NaN 값을 '없음'으로 변경
-    raw['AfterDataSpeed'] = raw['AfterDataSpeed'].fillna('없음')
-    
-    # 'Data' 열에서 숫자와 단위를 분리하여 GB로 변환
-    def convert_to_gb(data):
-        # 'Data' 값이 비어 있거나 숫자가 없으면 None 반환
-        if not data or not isinstance(data, str):
-            return 0
-        
-        # 숫자 추출
-        numbers = re.findall(r'\d+', data)
-        if not numbers:
-            return 0  # 숫자가 없으면 0 반환
-        
-        num = int(numbers[0])  # 숫자 추출
-        if 'MB' in data:
-            return num / 1000  # MB -> GB
-        elif 'GB' in data:
-            return num  # 이미 GB 단위
-        return 0  # 값이 없거나 예상되지 않는 형식일 경우 0
-    
-    raw['Data_GB'] = raw['Data'].apply(convert_to_gb)
-
-    # 'Message' 열에서 '20,000윙'은 제거하고 '100건건'은 '100건'으로 처리
-    def clean_message(message):
-        # '20,000윙' 제거
-        message = message.replace('윙', '').replace(',', '').strip()
-        
-        # '100건건'을 '100건'으로 변경
-        message = re.sub(r'(\d+)건건', r'\1건', message)
-        
-        # 'Message' 값이 10000 이상이면 None 처리
-        if isinstance(message, str) and any(char.isdigit() for char in message):
-            num = int(re.search(r'\d+', message).group())
-            if num >= 10000:
-                return None
-        return message
-
-    raw['Message'] = raw['Message'].apply(clean_message)
-
-    # 'Call' 열에서 '윙'을 제거하고 '10000' 이상인 값을 삭제 및 '100분분'을 '100분'으로 수정
-    def clean_call(call):
-        if isinstance(call, str):
-            # '10000' 이상인 값은 None으로 처리
-            if call.isdigit() and int(call) >= 10000:
-                return None  # 해당 값은 None으로 처리하여 삭제하도록 함
-
-            # '윙'과 ',' 제거
-            call = call.replace('윙', '').replace(',', '').strip()
-
-            # '100분분'을 '100분'으로 변경
-            call = call.replace('분분', '분')
-
-        return call
-    
-    raw['Call'] = raw['Call'].apply(clean_call)
-    
-    # 'Call' 열에서 None 값을 삭제
-    raw = raw.dropna(subset=['Call'])
-    
-    # 'Message' 열에서 None 값을 삭제
-    raw = raw.dropna(subset=['Message'])
-    
     return raw
+
+# 데이터 로드
+raw = read_data()
+raw = preprocessing(raw)
+preprocessing1()
 # 크롤링 버튼 추가
 if st.sidebar.button('T플러스 크롤링 시작'):
     crawling_tplus()
@@ -581,8 +497,8 @@ if st.sidebar.button('크롤링한 데이터 합치고 저장하기'):
     merged_data = merge_csv_files(directory)
     preprocessing1()
     save_all_data()
-# 데이터 로드
-raw = read_data()
+    raw = read_data()
+    raw = preprocessing(raw)
 
 # 사이드바 구성
 st.sidebar.header("요금제 검색 옵션")
