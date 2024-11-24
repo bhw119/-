@@ -301,13 +301,13 @@ def crawling_toss():
     
     # CSV로 저장 (컬럼명을 정확히 지정)
     df.to_csv("./data/토스모바일_data.csv", index=False, encoding="utf-8-sig")  # UTF-8-SIG로 저장하여 한글 깨짐 방지
-def merge_csv_files(directory):
+def merge_csv_files():
     existing_file = "알뜰폰_data.csv"
-    all_files = [f for f in os.listdir(directory) if f.endswith('.csv') and f != existing_file]
+    all_files = [f for f in os.listdir('./data/') if f.endswith('.csv') and f != existing_file]
     combined_df = pd.DataFrame()  # 결과를 저장할 빈 DataFrame 생성
     
     for file in all_files:
-        file_path = os.path.join(directory, file)  # 파일 경로 생성
+        file_path = os.path.join('./data/', file)  # 파일 경로 생성
         df = pd.read_csv(file_path)  # CSV 파일 읽기
         combined_df = pd.concat([combined_df, df], ignore_index=True)  # DataFrame 합치기
     
@@ -315,7 +315,7 @@ def merge_csv_files(directory):
 
 
 directory = './data/'
-merged_data = merge_csv_files(directory)
+merged_data = merge_csv_files()
 def preprocessing1():
     # 정규표현식으로 숫자와 Mbps만 추출하여 값을 변경
     merged_data['AfterDataSpeed'] = merged_data['AfterDataSpeed'].replace(r'(\d+)Mps.*', r'\1Mbps', regex=True)
@@ -478,23 +478,23 @@ raw = read_data()
 raw = preprocessing(raw)
 preprocessing1()
 # 크롤링 버튼 추가
-if st.sidebar.button('T플러스 크롤링 시작'):
+if st.sidebar.button('티플러스 크롤링 시작'):
     crawling_tplus()
 
 
-if st.sidebar.button('Toss 크롤링 시작'):
+if st.sidebar.button('토스모바일 크롤링 시작'):
     crawling_toss()
 
-if st.sidebar.button('Hello모바일 크롤링 시작'):
+if st.sidebar.button('헬로모바일 크롤링 시작'):
     crawling_hello_mob()
 
-if st.sidebar.button('Eyes 크롤링 시작'):
+if st.sidebar.button('아이즈모바일 크롤링 시작'):
     crawling_eyes()
 
 
 if st.sidebar.button('크롤링한 데이터 합치고 저장하기'):
     directory = './data/'
-    merged_data = merge_csv_files(directory)
+    merged_data = merge_csv_files()
     preprocessing1()
     save_all_data()
     raw = read_data()
