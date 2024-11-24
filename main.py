@@ -570,68 +570,94 @@ filtered_data = raw[
     (raw['Call'].isin(selected_call))  # 'Call' 열 필터링
 ]
 
-# 필터링된 데이터 개수 출력 (디버깅용)
-st.write(f"필터링된 데이터 개수: {filtered_data.shape[0]}")
 
-# 관리자 모드 토글 버튼
+# 초기 상태 설정
+if 'current_page' not in st.session_state:
+    st.session_state.current_page = "default" 
+
 if 'admin_mode' not in st.session_state:
     st.session_state.admin_mode = False
 
+# 페이지 이동 함수
 def toggle_admin_mode():
-    st.session_state.admin_mode = not st.session_state.admin_mode
+    st.session_state.current_page = "admin_mode"
+    st.session_state.admin_mode = True
 
-# 관리자 모드 버튼 클릭 시
+def toggle_readme():
+    st.session_state.current_page = "readme"
+    st.session_state.admin_mode = False
+
+# 사이드바 버튼 추가
 st.sidebar.button('관리자 모드', on_click=toggle_admin_mode)
+st.sidebar.button('프로젝트 소개', on_click=toggle_readme)
 
-# 관리자 모드가 활성화되면 그래프를 표시
-if st.session_state.admin_mode:
-    st.write("### 관리자 모드")
-    
-    # 데이터프레임을 그래프 위에 표시
-    st.write("#### 필터링된 데이터프레임")
+# 페이지에 따라 내용 표시
+if st.session_state.current_page == "default":
+    st.write("### 기본 페이지")
     st.dataframe(filtered_data)
-    
-    # 필터링된 데이터를 카운트하여 시각화할 데이터 준비
-    def count_filtered_values(column, selected_values):
-        return {value: filtered_data[filtered_data[column] == value].shape[0] for value in selected_values}
-    
-    # 각 필터링된 옵션 값들의 갯수를 계산
-    call_count = count_filtered_values('Call', selected_call)
-    message_count = count_filtered_values('Message', selected_message)
-    company_count = count_filtered_values('Company', selected_company)
-    telecom_count = count_filtered_values('Telecom', selected_telecom)
-    speed_count = count_filtered_values('AfterDataSpeed', selected_speed)
-    discount_count = count_filtered_values('DiscountMonth', selected_discount)
 
-    # 카운트 데이터를 바탕으로 그래프 그리기
-    def plot_count(count_data, title):
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.bar(count_data.keys(), count_data.values())
-        ax.set_title(title)
-        plt.xticks(rotation=45)  # X축 라벨 회전
-        st.pyplot(fig)
+elif st.session_state.current_page == "admin_mode":
+    st.write("### 관리자 모드")
+    if st.session_state.admin_mode:
+       
+        st.write("#### 필터링된 데이터프레임")
+        st.dataframe(filtered_data)
+        
+        # 필터링된 데이터를 카운트하여 시각화할 데이터 준비
+        def count_filtered_values(column, selected_values):
+            return {value: filtered_data[filtered_data[column] == value].shape[0] for value in selected_values}
+        
+        # 각 필터링된 옵션 값들의 갯수를 계산
+        call_count = count_filtered_values('Call', selected_call)
+        message_count = count_filtered_values('Message', selected_message)
+        company_count = count_filtered_values('Company', selected_company)
+        telecom_count = count_filtered_values('Telecom', selected_telecom)
+        speed_count = count_filtered_values('AfterDataSpeed', selected_speed)
+        discount_count = count_filtered_values('DiscountMonth', selected_discount)
 
-    plot_count(call_count, "통화 요금별 필터링된 데이터")
-    plot_count(message_count, "메시지량별 필터링된 데이터")
-    plot_count(company_count, "회사별 필터링된 데이터")
-    plot_count(telecom_count, "통신사별 필터링된 데이터")
-    plot_count(speed_count, "속도별 필터링된 데이터")
-    plot_count(discount_count, "할인기간별 필터링된 데이터")
+        # 카운트 데이터를 바탕으로 그래프 그리기
+        def plot_count(count_data, title):
+            fig, ax = plt.subplots(figsize=(10, 6))
+            ax.bar(count_data.keys(), count_data.values())
+            ax.set_title(title)
+            plt.xticks(rotation=45)  # X축 라벨 회전
+            st.pyplot(fig)
 
-    # 제목 데이터 분석 - 단어 분리 및 등장 횟수 계산
-    title_column = filtered_data['Title']
-    all_words = []
+        plot_count(call_count, "통화 요금별 필터링된 데이터")
+        plot_count(message_count, "메시지량별 필터링된 데이터")
+        plot_count(company_count, "회사별 필터링된 데이터")
+        plot_count(telecom_count, "통신사별 필터링된 데이터")
+        plot_count(speed_count, "속도별 필터링된 데이터")
+        plot_count(discount_count, "할인기간별 필터링된 데이터")
 
-    for title in title_column.dropna():
-        words = title.split()  # 띄어쓰기 기준으로 단어 분리
-        all_words.extend(words)
+        # 제목 데이터 분석 - 단어 분리 및 등장 횟수 계산
+        title_column = filtered_data['Title']
+        all_words = []
 
-    word_count = Counter(all_words)  # 단어별 등장 횟수 계산
-    word_count_data = pd.DataFrame(word_count.items(), columns=['Word', 'Count']).sort_values(by='Count', ascending=False)
+        for title in title_column.dropna():
+            words = title.split()  # 띄어쓰기 기준으로 단어 분리
+            all_words.extend(words)
 
-    st.write("### 제목 단어 분석")
-    st.dataframe(word_count_data)
+        word_count = Counter(all_words)  # 단어별 등장 횟수 계산
+        word_count_data = pd.DataFrame(word_count.items(), columns=['Word', 'Count']).sort_values(by='Count', ascending=False)
 
-else:
-    st.write("### 오늘의 알뜰폰 회사 요금제 데이터")
-    st.dataframe(filtered_data)  # 일반 모드에서는 필터링된 데이터만 표시
+        st.write("### 제목 단어 분석")
+        st.dataframe(word_count_data)
+
+    else:
+        st.write("#### 관리자 모드 비활성화됨")
+        st.write("그래프를 보려면 관리자 모드를 활성화하세요.")
+
+elif st.session_state.current_page == "readme":
+    st.write("# 프로젝트 소개")
+
+    # README.md 파일 읽어서 표시
+    readme_file = "readme.md"  # README 파일 경로
+    if os.path.exists(readme_file):
+        with open(readme_file, "r", encoding="utf-8") as file:
+            st.markdown(file.read())
+    else:
+        st.error("README.md 파일을 찾을 수 없습니다.")
+
+
+
